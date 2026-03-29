@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🪂 Airdrop Hunter</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0a14;
+      color: #fff;
+      min-height: 100vh;
+      padding: 30px 20px;
+    }
+    .container { max-width: 680px; margin: 0 auto; }
+    h1 {
+      text-align: center;
+      font-size: 32px;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #f7b731, #ff6b35, #e056fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .powered {
+      text-align: center;
+      color: #444;
+      font-size: 12px;
+      margin-bottom: 30px;
+    }
+    .powered span {
+      color: #7b2fff;
+      font-weight: bold;
+    }
+    .card {
+      background: #12121f;
+      border: 1px solid #1e1e35;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 15px;
+      color: #f7b731;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0a0a14;
+      border: 1px solid #1e1e35;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input:focus { border-color: #f7b731; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .toggle-group { display: flex; gap: 8px; }
+    .toggle-btn {
+      flex: 1;
+      padding: 9px;
+      border: 1px solid #1e1e35;
+      border-radius: 8px;
+      background: #0a0a14;
+      color: #666;
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .toggle-btn.active {
+      border-color: #f7b731;
+      color: #f7b731;
+      background: rgba(247,183,49,0.08);
+    }
+    .tier-group { display: flex; gap: 8px; }
+    .tier-btn {
+      flex: 1;
+      padding: 9px;
+      border: 1px solid #1e1e35;
+      border-radius: 8px;
+      background: #0a0a14;
+      color: #666;
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .tier-btn.active {
+      border-color: #e056fd;
+      color: #e056fd;
+      background: rgba(224,86,253,0.08);
+    }
+    .btn-run {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(90deg, #f7b731, #ff6b35);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: opacity 0.2s;
+    }
+    .btn-run:hover { opacity: 0.88; }
+    .btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 24px;
+      color: #666;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid #1e1e35;
+      border-top-color: #f7b731;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-msg {
+      display: none;
+      background: rgba(255,60,60,0.08);
+      border: 1px solid #ff3c3c;
+      border-radius: 10px;
+      padding: 14px;
+      color: #ff6b6b;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .result-card {
+      display: none;
+      background: #12121f;
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      border: 2px solid #1e1e35;
+      margin-bottom: 16px;
+    }
+    .result-emoji { font-size: 72px; margin-bottom: 14px; }
+    .result-label { font-size: 36px; font-weight: bold; margin-bottom: 6px; }
+    .result-score { font-size: 18px; color: #888; margin-bottom: 6px; }
+    .result-desc { color: #666; font-size: 14px; margin-bottom: 24px; }
+    .prob-section { margin-bottom: 20px; text-align: left; }
+    .prob-title { font-size: 12px; color: #555; margin-bottom: 10px; }
+    .prob-bar-group { margin-bottom: 10px; }
+    .prob-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 4px;
+    }
+    .prob-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: #1e1e35;
+      overflow: hidden;
+    }
+    .prob-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1s ease;
+    }
+    .guide-card {
+      display: none;
+      background: #12121f;
+      border: 1px solid #1e1e35;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .guide-card h3 {
+      color: #f7b731;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+    .guide-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+    .step-num {
+      min-width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #f7b731, #ff6b35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: #000;
+    }
+    .step-text { font-size: 13px; color: #aaa; line-height: 1.6; }
+    .step-text strong { color: #fff; }
+    .social-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .social-btn {
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #1e1e35;
+      color: #888;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .social-btn:hover {
+      border-color: #f7b731;
+      color: #f7b731;
+    }
+    .disclaimer {
+      text-align: center;
+      color: #333;
+      font-size: 11px;
+      padding-bottom: 30px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      margin-left: 8px;
+    }
+    .badge-hot   { background: rgba(255,107,53,0.15); color: #ff6b35; border: 1px solid #ff6b35; }
+    .badge-watch { background: rgba(247,183,49,0.15); color: #f7b731; border: 1px solid #f7b731; }
+    .badge-skip  { background: rgba(100,100,100,0.15); color: #666; border: 1px solid #444; }
+
+    /* Language Toggle */
+    .lang-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .lang-btn {
+      padding: 6px 18px;
+      border-radius: 20px;
+      border: 1px solid #1e1e35;
+      background: #0a0a14;
+      color: #666;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .lang-btn.active {
+      border-color: #f7b731;
+      color: #f7b731;
+      background: rgba(247,183,49,0.08);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🪂 Airdrop Hunter</h1>
+  <p class="subtitle" id="txt-subtitle">Phân tích tiềm năng airdrop bằng AI · Powered by OpenGradient</p>
+  <p class="powered">Model: <span>OpenGradient</span> · AI Analysis</p>
+
+  <!-- Language Toggle -->
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('vi')">🇻🇳 Tiếng Việt</button>
+    <button class="lang-btn" onclick="setLang('en')">🇺🇸 English</button>
+  </div>
+
+  <!-- Form: Thông tin dự án -->
+  <div class="card">
+    <h2>📋 <span id="lbl-projectinfo">Thông tin dự án</span></h2>
+    <div class="form-group">
+      <label id="lbl-projectname">🏷️ Tên dự án</label>
+      <input type="text" id="project_name" placeholder="vd: Example Protocol">
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label id="lbl-funding">💰 Vốn gọi được (triệu USD)</label>
+        <input type="number" id="funding" placeholder="vd: 10" value="10">
+      </div>
+      <div class="form-group">
+        <label id="lbl-backers">🏦 Số nhà đầu tư</label>
+        <input type="number" id="backers" placeholder="vd: 5" value="5">
+      </div>
+    </div>
+    <div class="form-group">
+      <label id="lbl-investor-tier">⭐ Chất lượng nhà đầu tư</label>
+      <div class="tier-group">
+        <div class="tier-btn" onclick="selectTier(this, 1)">Tier 3<br><span style="font-size:10px;color:#555">Nhỏ/Ẩn danh</span></div>
+        <div class="tier-btn active" onclick="selectTier(this, 2)">Tier 2<br><span style="font-size:10px;color:#555">Vừa/Biết tên</span></div>
+        <div class="tier-btn" onclick="selectTier(this, 3)">Tier 1<br><span style="font-size:10px;color:#555">a16z/Binance</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form: Team -->
+  <div class="card">
+    <h2>👥 <span id="lbl-teaminfo">Thông tin Team</span></h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label id="lbl-teamsize">👤 Quy mô team</label>
+        <input type="number" id="team_size" placeholder="vd: 15" value="15">
+      </div>
+      <div class="form-group">
+        <label id="lbl-agemonths">📅 Tuổi dự án (tháng)</label>
+        <input type="number" id="age_months" placeholder="vd: 10" value="10">
+      </div>
+    </div>
+    <div class="form-group">
+      <label id="lbl-teamdoxxed">🪪 Team công khai danh tính?</label>
+      <div class="toggle-group">
+        <div class="toggle-btn active" onclick="selectToggle(this,'doxxed',1)" id="lbl-yes1">✅ Có</div>
+        <div class="toggle-btn" onclick="selectToggle(this,'doxxed',0)" id="lbl-no1">❌ Không</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form: Cộng đồng & Kỹ thuật -->
+  <div class="card">
+    <h2>🌐 <span id="lbl-community">Cộng đồng & Kỹ thuật</span></h2>
+    <div class="form-group">
+      <label id="lbl-communitysize">📣 Tổng followers (Twitter + Discord + Telegram)</label>
+      <input type="number" id="community" placeholder="vd: 50000" value="50000">
+    </div>
+    <div class="grid-3">
+      <div class="form-group">
+        <label id="lbl-testnet">🧪 Có Testnet?</label>
+        <div class="toggle-group">
+          <div class="toggle-btn active" onclick="selectToggle(this,'testnet',1)">✅</div>
+          <div class="toggle-btn" onclick="selectToggle(this,'testnet',0)">❌</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label id="lbl-mainnet">🚀 Mainnet live?</label>
+        <div class="toggle-group">
+          <div class="toggle-btn" onclick="selectToggle(this,'mainnet',1)">✅</div>
+          <div class="toggle-btn active" onclick="selectToggle(this,'mainnet',0)">❌</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label id="lbl-github">💻 Github active?</label>
+        <div class="toggle-group">
+          <div class="toggle-btn active" onclick="selectToggle(this,'github',1)">✅</div>
+          <div class="toggle-btn" onclick="selectToggle(this,'github',0)">❌</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Social Links -->
+    <div class="form-group" style="margin-top:8px;">
+      <label id="lbl-socials">🔗 Links Social (tùy chọn)</label>
+      <div class="grid-2">
+        <input type="text" id="twitter_link" placeholder="🐦 Twitter/X URL">
+        <input type="text" id="discord_link" placeholder="💬 Discord URL">
+        <input type="text" id="telegram_link" placeholder="📱 Telegram URL">
+        <input type="text" id="website_link" placeholder="🌐 Website URL">
+      </div>
+    </div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <button class="btn-run" onclick="runAnalysis()" id="btn-analyze">
+    🔍 Phân tích tiềm năng Airdrop
+  </button>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p id="loading-text">Đang phân tích dữ liệu...</p>
+  </div>
+
+  <!-- Kết quả -->
+  <div class="result-card" id="resultCard">
+    <div class="result-emoji" id="resultEmoji"></div>
+    <div class="result-label" id="resultLabel"></div>
+    <div class="result-score" id="resultScore"></div>
+    <div class="result-desc" id="resultDesc"></div>
+    <div class="prob-section">
+      <div class="prob-title" id="lbl-probability">Xác suất phân loại:</div>
+      <div id="probBars"></div>
+    </div>
+  </div>
+
+  <!-- Hướng dẫn tham gia Airdrop -->
+  <div class="guide-card" id="guideCard">
+    <h3 id="lbl-guide-title">📋 Hướng dẫn tham gia Airdrop</h3>
+    <div id="guideSteps"></div>
+    <div id="socialSection"></div>
+  </div>
+
+  <p class="disclaimer" id="lbl-disclaimer">
+    ⚠️ Chỉ mang tính tham khảo. Không phải lời khuyên đầu tư tài chính. Luôn DYOR.
+  </p>
+
+</div>
+
+<script>
+  const MODEL_CID = "qUj6a-BC21yGZPW0h1RrvJuLC5Mwy9zaj_74lbaD9t0";
+
+  let lang = 'vi';
+  let tierVal = 2;
+  let toggles = { doxxed: 1, testnet: 1, mainnet: 0, github: 1 };
+
+  const texts = {
+    vi: {
+      subtitle: 'Phân tích tiềm năng airdrop bằng AI · Powered by OpenGradient',
+      projectinfo: 'Thông tin dự án', projectname: '🏷️ Tên dự án',
+      funding: '💰 Vốn gọi được (triệu USD)', backers: '🏦 Số nhà đầu tư',
+      'investor-tier': '⭐ Chất lượng nhà đầu tư',
+      teaminfo: 'Thông tin Team', teamsize: '👤 Quy mô team',
+      agemonths: '📅 Tuổi dự án (tháng)', teamdoxxed: '🪪 Team công khai danh tính?',
+      community: 'Cộng đồng & Kỹ thuật',
+      communitysize: '📣 Tổng followers (Twitter + Discord + Telegram)',
+      testnet: '🧪 Có Testnet?', mainnet: '🚀 Mainnet live?', github: '💻 Github active?',
+      socials: '🔗 Links Social (tùy chọn)',
+      analyze: '🔍 Phân tích tiềm năng Airdrop',
+      loading: 'Đang phân tích dữ liệu...',
+      probability: 'Xác suất phân loại:',
+      'guide-title': '📋 Hướng dẫn tham gia Airdrop',
+      disclaimer: '⚠️ Chỉ mang tính tham khảo. Không phải lời khuyên đầu tư tài chính. Luôn DYOR.',
+      results: {
+        2: { emoji: '🔥', label: 'HOT', desc: 'Tiềm năng airdrop cao — Ưu tiên tham gia ngay!' },
+        1: { emoji: '👀', label: 'WATCH', desc: 'Tiềm năng trung bình — Theo dõi thêm!' },
+        0: { emoji: '❌', label: 'SKIP', desc: 'Tiềm năng thấp — Không ưu tiên!' }
+      },
+      score: 'Điểm tiềm năng:',
+      labels: ['SKIP', 'WATCH', 'HOT'],
+      steps: [
+        { title: 'Kết nối ví', desc: 'Chuẩn bị ví <strong>Metamask / Phantom / Rabby</strong> và kết nối vào website dự án.' },
+        { title: 'Làm Testnet', desc: 'Tham gia testnet, thực hiện các giao dịch thử nghiệm để tích lũy điểm hoạt động.' },
+        { title: 'Follow Social', desc: 'Follow Twitter, join Discord/Telegram và tham gia các sự kiện cộng đồng.' },
+        { title: 'Hoàn thành nhiệm vụ', desc: 'Làm các task trên <strong>Galxe / Layer3 / Zealy</strong> nếu dự án có chiến dịch.' },
+        { title: 'Giữ và chờ', desc: 'Tiếp tục dùng sản phẩm đều đặn, tránh bỏ lỡ snapshot airdrop.' }
+      ],
+      socialTitle: '🔗 Links dự án:'
+    },
+    en: {
+      subtitle: 'AI-powered airdrop potential analyzer · Powered by OpenGradient',
+      projectinfo: 'Project Information', projectname: '🏷️ Project Name',
+      funding: '💰 Funding Amount (million USD)', backers: '🏦 Number of Backers',
+      'investor-tier': '⭐ Investor Quality',
+      teaminfo: 'Team Information', teamsize: '👤 Team Size',
+      agemonths: '📅 Project Age (months)', teamdoxxed: '🪪 Team Publicly Identified?',
+      community: 'Community & Technical',
+      communitysize: '📣 Total Followers (Twitter + Discord + Telegram)',
+      testnet: '🧪 Testnet Active?', mainnet: '🚀 Mainnet Live?', github: '💻 Github Active?',
+      socials: '🔗 Social Links (optional)',
+      analyze: '🔍 Analyze Airdrop Potential',
+      loading: 'Analyzing data...',
+      probability: 'Classification Probability:',
+      'guide-title': '📋 How to Participate in the Airdrop',
+      disclaimer: '⚠️ For reference only. Not financial advice. Always DYOR.',
+      results: {
+        2: { emoji: '🔥', label: 'HOT', desc: 'High airdrop potential — Participate now!' },
+        1: { emoji: '👀', label: 'WATCH', desc: 'Medium potential — Keep watching!' },
+        0: { emoji: '❌', label: 'SKIP', desc: 'Low potential — Not a priority!' }
+      },
+      score: 'Potential Score:',
+      labels: ['SKIP', 'WATCH', 'HOT'],
+      steps: [
+        { title: 'Connect Wallet', desc: 'Prepare your <strong>Metamask / Phantom / Rabby</strong> wallet and connect to the project website.' },
+        { title: 'Join Testnet', desc: 'Participate in testnet, perform test transactions to accumulate activity points.' },
+        { title: 'Follow Social', desc: 'Follow Twitter, join Discord/Telegram and participate in community events.' },
+        { title: 'Complete Tasks', desc: 'Complete tasks on <strong>Galxe / Layer3 / Zealy</strong> if the project has campaigns.' },
+        { title: 'Hold & Wait', desc: 'Keep using the product regularly, avoid missing airdrop snapshots.' }
+      ],
+      socialTitle: '🔗 Project Links:'
+    }
+  };
+
+  function setLang(l) {
+    lang = l;
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    const t = texts[l];
+    document.getElementById('txt-subtitle').textContent = t.subtitle;
+    document.getElementById('lbl-projectinfo').textContent = t.projectinfo;
+    document.getElementById('lbl-projectname').textContent = t.projectname;
+    document.getElementById('lbl-funding').textContent = t.funding;
+    document.getElementById('lbl-backers').textContent = t.backers;
+    document.getElementById('lbl-investor-tier').textContent = t['investor-tier'];
+    document.getElementById('lbl-teaminfo').textContent = t.teaminfo;
+    document.getElementById('lbl-teamsize').textContent = t.teamsize;
+    document.getElementById('lbl-agemonths').textContent = t.agemonths;
+    document.getElementById('lbl-teamdoxxed').textContent = t.teamdoxxed;
+    document.getElementById('lbl-community').textContent = t.community;
+    document.getElementById('lbl-communitysize').textContent = t.communitysize;
+    document.getElementById('lbl-testnet').textContent = t.testnet;
+    document.getElementById('lbl-mainnet').textContent = t.mainnet;
+    document.getElementById('lbl-github').textContent = t.github;
+    document.getElementById('lbl-socials').textContent = t.socials;
+    document.getElementById('btn-analyze').textContent = t.analyze;
+    document.getElementById('lbl-disclaimer').textContent = t.disclaimer;
+    document.getElementById('lbl-probability').textContent = t.probability;
+    document.getElementById('lbl-guide-title').textContent = t['guide-title'];
+  }
+
+  function selectTier(el, val) {
+    tierVal = val;
+    document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function selectToggle(el, type, val) {
+    toggles[type] = val;
+    const group = el.parentElement;
+    group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  async function runAnalysis() {
+    const name      = document.getElementById('project_name').value.trim();
+    const funding   = parseFloat(document.getElementById('funding').value);
+    const backers   = parseFloat(document.getElementById('backers').value);
+    const teamSize  = parseFloat(document.getElementById('team_size').value);
+    const age       = parseFloat(document.getElementById('age_months').value);
+    const community = parseFloat(document.getElementById('community').value);
+
+    if (!name) { showError(lang === 'vi' ? '⚠️ Vui lòng nhập tên dự án!' : '⚠️ Please enter project name!'); return; }
+    if ([funding, backers, teamSize, age, community].some(isNaN)) {
+      showError(lang === 'vi' ? '⚠️ Vui lòng điền đầy đủ các ô số!' : '⚠️ Please fill in all number fields!');
+      return;
+    }
+
+    document.getElementById('errorMsg').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('guideCard').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('loading-text').textContent = texts[lang].loading;
+    document.getElementById('btn-analyze').disabled = true;
+
+    const input = [[
+      funding, tierVal, teamSize,
+      toggles.doxxed, community,
+      toggles.testnet, toggles.mainnet,
+      backers, age, toggles.github
+    ]];
+
+    let label = 1;
+    let probs = null;
+
+    try {
+      const res = await fetch("https://api.opengradient.ai/api/v1/model/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model_cid: MODEL_CID, inputs: { float_input: input } })
+      });
+      const data = await res.json();
+      label = data?.output_label?.[0] ?? data?.label?.[0] ?? calcLabel(funding, community);
+      probs = data?.output_probability?.[0] ?? data?.probabilities?.[0];
+    } catch {
+      label = calcLabel(funding, community);
+    } finally {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('btn-analyze').disabled = false;
+    }
+
+    showResult(label, probs, name);
+    showGuide(name);
+  }
+
+  function calcLabel(funding, community) {
+    let score = 0;
+    if (funding >= 10) score += 20; else if (funding >= 3) score += 10;
+    if (tierVal >= 2.5) score += 20; else if (tierVal >= 1.5) score += 10;
+    if (toggles.doxxed) score += 10;
+    if (community >= 50000) score += 15; else if (community >= 10000) score += 8;
+    if (toggles.testnet) score += 15;
+    if (!toggles.mainnet) score += 5;
+    if (toggles.github) score += 5;
+    return score >= 75 ? 2 : score >= 45 ? 1 : 0;
+  }
+
+  function showResult(label, probs, name) {
+    const t = texts[lang];
+    const c = t.results[label];
+    const colors = { 2: '#ff6b35', 1: '#f7b731', 0: '#555' };
+    const barColors = ['#555', '#f7b731', '#ff6b35'];
+
+    document.getElementById('resultEmoji').textContent = c.emoji;
+    document.getElementById('resultLabel').innerHTML = `${name} <span class="badge badge-${c.label.toLowerCase()}">${c.label}</span>`;
+    document.getElementById('resultLabel').style.color = colors[label];
+
+    let scoreEst = label === 2 ? '75-95' : label === 1 ? '45-74' : '0-44';
+    document.getElementById('resultScore').textContent = `${t.score} ${scoreEst}/100`;
+    document.getElementById('resultDesc').textContent = c.desc;
+    document.getElementById('resultCard').style.borderColor = colors[label];
+
+    let html = '';
+    if (probs) {
+      const arr = Array.isArray(probs) ? probs : Object.values(probs);
+      arr.forEach((p, i) => {
+        const pct = (p * 100).toFixed(1);
+        html += `
+          <div class="prob-bar-group">
+            <div class="prob-label"><span>${t.labels[i]}</span><span>${pct}%</span></div>
+            <div class="prob-bar">
+              <div class="prob-fill" style="width:${pct}%;background:${barColors[i]}"></div>
+            </div>
+          </div>`;
+      });
+    }
+    document.getElementById('probBars').innerHTML = html;
+    document.getElementById('resultCard').style.display = 'block';
+  }
+
+  function showGuide(name) {
+    const t = texts[lang];
+    let stepsHtml = t.steps.map((s, i) => `
+      <div class="guide-step">
+        <div class="step-num">${i+1}</div>
+        <div class="step-text"><strong>${s.title}</strong><br>${s.desc}</div>
+      </div>`).join('');
+    document.getElementById('guideSteps').innerHTML = stepsHtml;
+
+    // Social links
+    const twitter  = document.getElementById('twitter_link').value;
+    const discord  = document.getElementById('discord_link').value;
+    const telegram = document.getElementById('telegram_link').value;
+    const website  = document.getElementById('website_link').value;
+    const links = [
+      { url: twitter,  icon: '🐦', label: 'Twitter/X' },
+      { url: discord,  icon: '💬', label: 'Discord' },
+      { url: telegram, icon: '📱', label: 'Telegram' },
+      { url: website,  icon: '🌐', label: 'Website' },
+    ].filter(l => l.url);
+
+    let socialHtml = '';
+    if (links.length > 0) {
+      socialHtml = `<p style="font-size:13px;color:#666;margin-top:16px;margin-bottom:8px">${t.socialTitle}</p>
+        <div class="social-links">` +
+        links.map(l => `<a class="social-btn" href="${l.url}" target="_blank">${l.icon} ${l.label}</a>`).join('') +
+        `</div>`;
+    }
+    document.getElementById('socialSection').innerHTML = socialHtml;
+    document.getElementById('guideCard').style.display = 'block';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+</script>
+</body>
+</html>
